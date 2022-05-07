@@ -3,7 +3,7 @@ A collection of scripts to automate the deployment for testing btcpayserver
 
 ## Prequisits
 * Install [Virtualbox](https://www.virtualbox.org) and [Vagrant](https://www.vagrantup.com/) on your machine.
-* Ensure you have a minimum of 25 GB Diskspace and 4 GB RAM and 2 Cores for the VM.
+* Ensure you have a minimum of 40 GB Diskspace and 4 GB RAM and 4 Cores for the VM.
 
 ## Steps for local testing
 * Open a Terminal
