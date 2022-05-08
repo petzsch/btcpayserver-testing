@@ -1,0 +1,22 @@
+@using BTCPayServer.Abstractions.Contracts
+@inject ISettingsRepository _settingsRepository
+@addTagHelper *, BundlerMinifier.TagHelpers
+@{ var policies = await _settingsRepository.GetPolicies(); }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="~/favicon.ico" type="image/x-icon">
+@if (policies.DiscourageSearchEngines)
+{
+<meta name="robots" content="noindex">
+}
+<title>@ViewData["Title"]</title>
+@* CSS *@
+<bundle name="wwwroot/bundles/main-bundle.min.css" asp-append-version="true" />
+<partial name="LayoutHeadTheme" />
+@* Non-JS *@
+<noscript>
+    <style>
+        .hide-when-js, [v-cloak] { display: block !important; }
+        .only-for-js { display: none !important; }
+    </style>
+</noscript>

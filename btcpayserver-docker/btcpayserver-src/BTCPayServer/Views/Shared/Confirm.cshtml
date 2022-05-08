@@ -1,0 +1,24 @@
+﻿@model ConfirmModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "_LayoutSimple";
+}
+
+@section PageHeadContent {
+    <style>
+        body > .content-wrapper { display: flex; min-height: 100vh; }
+        .modal-dialog .btn-close { display: none; }
+    </style>
+}
+
+@section PageFootContent {
+    <script>
+        document.getElementById('ConfirmCancel').addEventListener('click', function () {
+            history.back();
+            return false;
+        })
+    </script>
+}
+
+<partial name="ConfirmModal" model="Model" />

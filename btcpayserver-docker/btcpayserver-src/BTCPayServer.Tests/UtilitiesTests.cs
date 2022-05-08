@@ -1,0 +1,99 @@
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using NBitcoin.DataEncoders;
+using Newtonsoft.Json.Linq;
+using Xunit;
+
+namespace BTCPayServer.Tests
+{
+    /// <summary>
+    /// This class hold easy to run utilities for dev time
+    /// </summary>
+    public class UtilitiesTests
+    {
+        /// <summary>
+        /// Download transifex transactions and put them in BTCPayServer\wwwroot\locales
+        /// </summary>
+        [FactWithSecret("TransifexAPIToken")]
+        [Trait("Utilities", "Utilities")]
+        public async Task PullTransifexTranslations()
+        {
+            // 1. Generate an API Token on https://www.transifex.com/user/settings/api/
+            // 2. Run "dotnet user-secrets set TransifexAPIToken <youapitoken>"
+            var client = new TransifexClient(FactWithSecretAttribute.GetFromSecrets("TransifexAPIToken"));
+            var json = await client.GetTransifexAsync("https://api.transifex.com/organizations/btcpayserver/projects/btcpayserver/resources/enjson/");
+            var langs = new[] { "en" }.Concat(((JObject)json["stats"]).Properties().Select(n => n.Name)).ToArray();
+
+            var langsDir = Path.Combine(TestUtils.TryGetSolutionDirectoryInfo().FullName, "BTCPayServer", "wwwroot", "locales");
+
+            JObject sourceLang = null;
+            Task.WaitAll(langs.Select(async l =>
+            {
+                bool isSourceLang = l == "en";
+                var j = await client.GetTransifexAsync($"https://www.transifex.com/api/2/project/btcpayserver/resource/enjson/translation/{l}/");
+                if (!isSourceLang)
+                {
+                    while (sourceLang == null)
+                        await Task.Delay(10);
+                }
+                var content = j["content"].Value<string>();
+                if (l == "ne_NP")
+                    l = "np_NP";
+                if (l == "zh_CN")
+                    l = "zh-SP";
+                if (l == "kk")
+                    l = "kk-KZ";
+
+                var langCode = l.Replace("_", "-");
+                var langFile = Path.Combine(langsDir, langCode + ".json");
+                var jobj = JObject.Parse(content);
+                jobj["code"] = langCode;
+
+                if ((string)jobj["currentLanguage"] == "English" && !isSourceLang)
+                    return; // Not translated
+                if ((string)jobj["currentLanguage"] == "disable")
+                    return; // Not translated
+
+                jobj.AddFirst(new JProperty("NOTICE_WARN", "THIS CODE HAS BEEN AUTOMATICALLY GENERATED FROM TRANSIFEX, IF YOU WISH TO HELP TRANSLATION COME ON THE SLACK http://slack.btcpayserver.org TO REQUEST PERMISSION TO https://www.transifex.com/btcpayserver/btcpayserver/"));
+                if (isSourceLang)
+                {
+                    sourceLang = jobj;
+                }
+                else
+                {
+                    if (jobj["InvoiceExpired_Body_3"].Value<string>() == sourceLang["InvoiceExpired_Body_3"].Value<string>())
+                    {
+                        jobj["InvoiceExpired_Body_3"] = string.Empty;
+                    }
+                }
+                content = jobj.ToString(Newtonsoft.Json.Formatting.Indented);
+                File.WriteAllText(Path.Combine(langsDir, langFile), content);
+            }).ToArray());
+        }
+    }
+
+    public class TransifexClient
+    {
+        public TransifexClient(string apiToken)
+        {
+            Client = new HttpClient();
+            APIToken = apiToken;
+        }
+
+        public HttpClient Client { get; }
+        public string APIToken { get; }
+
+        public async Task<JObject> GetTransifexAsync(string uri)
+        {
+            var message = new HttpRequestMessage(HttpMethod.Get, uri);
+            message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Encoders.Base64.EncodeData(Encoding.ASCII.GetBytes($"api:{APIToken}")));
+            message.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            var response = await Client.SendAsync(message);
+            return await response.Content.ReadAsAsync<JObject>();
+        }
+    }
+}
