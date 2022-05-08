@@ -67,7 +67,7 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
+  config.vm.provision "shell", env: {"BTCPAY_BRANCH" => ENV['BTCPAY_BRANCH']}, inline: <<-SHELL
     apt-get update
     apt-get install -y git nginx
     # Create a folder for BTCPay
@@ -78,9 +78,21 @@ Vagrant.configure("2") do |config|
     # Clone this repository
     git clone https://github.com/btcpayserver/btcpayserver-docker
     cd btcpayserver-docker
+    git clone https://github.com/btcpayserver/btcpayserver.git
+    cd btcpayserver
+    if [ -z "$BTCPAY_BRANCH" ]
+      then
+            export BTCPAY_BRANCH="master"
+            echo "master will be checked out (none selected)"
+      else
+            echo "\$BTCPAY_BRANCH will be checked out"
+      fi
+    git checkout $BTCPAY_BRANCH
+    cd ..
 
     # Run btcpay-setup.sh with the right parameters
     export BTCPAY_HOST="btcpay.local"
+    export BTCPAY_ADDITIONAL_HOSTS="localhost"
     export NBITCOIN_NETWORK="mainnet"
     export BTCPAYGEN_CRYPTO1="btc"
     export BTCPAYGEN_ADDITIONAL_FRAGMENTS="opt-save-storage-xxs"

@@ -9,6 +9,9 @@ A collection of scripts to automate the deployment for testing btcpayserver
 * Open a Terminal
 * Clone this repo
 * cd into the repo
-* run `./pull-subtree.sh` to pull changes from the upstream repos
-* run `vagrant up`
+* run `vagrant up` or `BTCPAY_BRANCH=[your-branch-of-btcpayserver-repo] vagrant up`
 * after vagrant finishes, open [localhost:8080](http://localhost:8080)
+
+## TODO
+* enable btcpayserver-docker to docker-compose --build instead of just "up" using the src directory instead of the released image
+* fix the redirect issue after registration it sends you to localhost/login instead of localhost:8080/login (strange)
