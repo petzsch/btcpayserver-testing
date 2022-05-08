@@ -14,4 +14,3 @@ A collection of scripts to automate the deployment for testing btcpayserver
 
 ## TODO
 * enable btcpayserver-docker to docker-compose --build instead of just "up" using the src directory instead of the released image
-* fix the redirect issue after registration it sends you to localhost/login instead of localhost:8080/login (strange)

@@ -67,7 +67,7 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", env: {"BTCPAY_BRANCH" => ENV['BTCPAY_BRANCH']}, inline: <<-SHELL
+  config.vm.provision "shell", env: {"BTCPAY_BRANCH" => ENV['BTCPAY_BRANCH'], "BTCPAY_REPO" => ENV['BTCPAY_REPO']}, inline: <<-SHELL
     apt-get update
     apt-get install -y git nginx
     # Create a folder for BTCPay
@@ -78,8 +78,13 @@ Vagrant.configure("2") do |config|
     # Clone this repository
     git clone https://github.com/btcpayserver/btcpayserver-docker
     cd btcpayserver-docker
-    git clone https://github.com/btcpayserver/btcpayserver.git
-    cd btcpayserver
+    if [ -z "$BTCPAY_REPO" ]
+      then
+            export BTCPAY_REPO="https://github.com/btcpayserver/btcpayserver.git"
+            echo "cloning from https://github.com/btcpayserver/btcpayserver.git (none selected)"
+      else
+            echo "\$BTCPAY_REPO will be cloned"
+      fi
     if [ -z "$BTCPAY_BRANCH" ]
       then
             export BTCPAY_BRANCH="master"
@@ -87,8 +92,7 @@ Vagrant.configure("2") do |config|
       else
             echo "\$BTCPAY_BRANCH will be checked out"
       fi
-    git checkout $BTCPAY_BRANCH
-    cd ..
+    git clone --single-branch -b $BTCPAY_BRANCH $BTCPAY_REPO
 
     # Run btcpay-setup.sh with the right parameters
     export BTCPAY_HOST="btcpay.local"
@@ -109,10 +113,11 @@ Vagrant.configure("2") do |config|
     cp /home/vagrant/tmp/default.conf /etc/nginx/conf.d/default.conf
     cp /home/vagrant/tmp/default /etc/nginx/sites-available/default
     systemctl restart nginx
-    cd /root/BTCPayServer/btcpayserver-docker/
-    btcpay-down.sh
-    cd contrib/FastSync
-    ./load-utxo-set.sh
-    btcpay-up.sh
+    # TODO:re-enable fastsync
+    # cd /root/BTCPayServer/btcpayserver-docker/
+    # btcpay-down.sh
+    # cd contrib/FastSync
+    # ./load-utxo-set.sh
+    # btcpay-up.sh
   SHELL
 end
