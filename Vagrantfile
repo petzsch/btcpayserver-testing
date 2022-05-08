@@ -116,11 +116,10 @@ Vagrant.configure("2") do |config|
     btcpay-restart.sh
   SHELL
   config.vm.provision "shell", inline: <<-SHELL
-    # TODO: re-enable this
-    # cd /root/BTCPayServer/btcpayserver-docker/
-    # btcpay-down.sh
-    # cd contrib/FastSync
-    # ./load-utxo-set.sh
-    # btcpay-up.sh
+    cd /root/BTCPayServer/btcpayserver-docker/
+    btcpay-down.sh
+    cd contrib/FastSync
+    ./load-utxo-set.sh
+    btcpay-up.sh
   SHELL
 end
