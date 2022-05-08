@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # NOTE: This will enable public access to the opened port
-  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 9001, host: 8080
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
@@ -69,7 +69,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", env: {"BTCPAY_BRANCH" => ENV['BTCPAY_BRANCH'], "BTCPAY_REPO" => ENV['BTCPAY_REPO']}, inline: <<-SHELL
     apt-get update
-    apt-get install -y git nginx
+    apt-get install -y git
     # Create a folder for BTCPay
     cd /root/
     mkdir BTCPayServer
@@ -107,12 +107,7 @@ Vagrant.configure("2") do |config|
     export BTCPAY_ENABLE_SSH=true
     . ./btcpay-setup.sh -i
   SHELL
-  config.vm.provision "file", source: "nginx/nginx.conf", destination: "$HOME/tmp/default.conf"
-  config.vm.provision "file", source: "nginx/default", destination: "$HOME/tmp/default"
   config.vm.provision "shell", inline: <<-SHELL
-    cp /home/vagrant/tmp/default.conf /etc/nginx/conf.d/default.conf
-    cp /home/vagrant/tmp/default /etc/nginx/sites-available/default
-    systemctl restart nginx
     # TODO:re-enable fastsync
     # cd /root/BTCPayServer/btcpayserver-docker/
     # btcpay-down.sh
