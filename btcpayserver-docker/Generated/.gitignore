@@ -1,0 +1,5 @@
+*.yml
+nginx.tmpl
+*.toml
+*.json
+pull-images.sh

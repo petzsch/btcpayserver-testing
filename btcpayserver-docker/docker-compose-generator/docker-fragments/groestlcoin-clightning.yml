@@ -1,0 +1,71 @@
+version: "3"
+
+services:
+  clightning_groestlcoin:
+    image: groestlcoin/lightning:v0.10.0
+    container_name: btcpayserver_clightning_groestlcoin
+    restart: unless-stopped
+    environment:
+      LIGHTNINGD_NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      LIGHTNINGD_CHAIN: grs
+      LIGHTNINGD_ALIAS: ${LIGHTNING_ALIAS}
+      LIGHTNINGD_ANNOUNCEADDR: ${BTCPAY_ANNOUNCEABLE_HOST}
+      LIGHTNINGD_PORT: 9736
+      LIGHTNINGD_EXPLORERURL: "http://nbxplorer:32838/"
+      LIGHTNINGD_OPT: |
+        bitcoin-datadir=/etc/groestlcoin
+        bitcoin-rpcconnect=groestlcoind
+    volumes:
+      - "clightning_groestlcoin_datadir:/root/.lightning"
+      - "groestlcoin_datadir:/etc/groestlcoin"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+    ports:
+      - "9736:9736"
+    links:
+      - groestlcoind
+  clightning_groestlcoin_charge:
+    image: groestlcoin/groestlcoin-lightning-charge:version-0.4.22
+    restart: unless-stopped
+    environment:
+      NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      COOKIE_FILE: /data/.cookie
+      URL: ${BTCPAY_ROOTPATH:-/}lightning-charge/grs/
+      LN_NET_PATH: /etc/lightning
+      LN_NET: /etc/lightning
+    volumes:
+      - "clightning_groestlcoin_datadir:/etc/lightning"
+      - "clightning_groestlcoin_charge:/data"
+    expose:
+      - "9112"
+    links:
+      - clightning_groestlcoin
+
+  clightning_groestlcoin_spark:
+    image: groestlcoin/groestlcoin-spark:version-0.2.16
+    restart: unless-stopped
+    environment:
+      NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      SPARK_OPT: --no-tls -C /data/.cookie
+    volumes:
+      - "clightning_groestlcoin_datadir:/etc/lightning"
+      - "clightning_groestlcoin_spark:/data"
+    links:
+      - clightning_groestlcoin
+    expose:
+      - "9736"
+
+  btcpayserver:
+    environment:
+      BTCPAY_GRSLIGHTNING: "type=clightning;server=unix://etc/clightning_groestlcoin/lightning-rpc"
+      BTCPAY_GRSEXTERNALSPARK: "server=/spark/grs;cookiefile=/etc/clightning_groestlcoin_spark/.cookie"
+      BTCPAY_GRSEXTERNALCHARGE: "server=/lightning-charge/grs/;cookiefilepath=/etc/clightning_groestlcoin_charge/.cookie"
+    volumes:
+      - "clightning_groestlcoin_datadir:/etc/clightning_groestlcoin"
+      - "clightning_groestlcoin_spark:/etc/clightning_groestlcoin_spark"
+      - "clightning_groestlcoin_charge:/etc/clightning_groestlcoin_charge"
+    links:
+      - clightning_groestlcoin
+volumes:
+  clightning_groestlcoin_datadir:
+  clightning_groestlcoin_charge:
+  clightning_groestlcoin_spark:
