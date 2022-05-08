@@ -1,7 +1,0 @@
-version: "3"
-
-services:
-  lnd_bitcoin:
-    environment:
-      LND_EXTRA_ARGS: |
-        accept-keysend=1

@@ -9,5 +9,6 @@ A collection of scripts to automate the deployment for testing btcpayserver
 * Open a Terminal
 * Clone this repo
 * cd into the repo
+* run `./pull-subtree.sh` to pull changes from the upstream repos
 * run `vagrant up`
 * after vagrant finishes, open [localhost:8080](http://localhost:8080)
