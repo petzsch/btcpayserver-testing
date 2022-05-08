@@ -112,14 +112,15 @@ Vagrant.configure("2") do |config|
     export BTCPAY_ENABLE_SSH=true
     . ./btcpay-setup.sh -i
     # patch generated docker-compose file to include build context instead of image
-    sed -i 's#image: \${BTCPAY_IMAGE:-btcpayserver\/btcpayserver:.*\..*\..*}#build:\n      context: \.\./btcpayserver\n      dockerfile: amd64.Dockerfile#g' Generated/docker-compose.generated.yml
+    sed -i 's#image: \${BTCPAY_IMAGE:-btcpayserver\/btcpayserver:.*\..*\..*}#build:\\n      context: \.\./btcpayserver\\n      dockerfile: amd64\.Dockerfile#g' Generated/docker-compose.generated.yml
     btcpay-restart.sh
   SHELL
   config.vm.provision "shell", inline: <<-SHELL
-    cd /root/BTCPayServer/btcpayserver-docker/
-    btcpay-down.sh
-    cd contrib/FastSync
-    ./load-utxo-set.sh
-    btcpay-up.sh
+    # TODO: re-enable this
+    # cd /root/BTCPayServer/btcpayserver-docker/
+    # btcpay-down.sh
+    # cd contrib/FastSync
+    # ./load-utxo-set.sh
+    # btcpay-up.sh
   SHELL
 end
