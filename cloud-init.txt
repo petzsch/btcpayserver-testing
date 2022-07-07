@@ -1,0 +1,32 @@
+# use the following cloud-init config for VPS Providers that allow you to use cloud-init
+# please adapt to your own needs, bare minimum would be to edit BTCPAY_HOST variable
+
+#cloud-config
+runcmd:
+  - echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+  - systemctl restart ssh
+  - mkdir /root/BTCPayServer
+  - cd /root/BTCPayServer
+  - git clone https://github.com/btcpayserver/btcpayserver-docker
+  - cd btcpayserver-docker
+  - git clone --single-branch -b master https://github.com/btcpayserver/btcpayserver.git
+  - sed -i 's;docker-compose -f $BTCPAY_DOCKER_COMPOSE up --remove-orphans -d;docker-compose -f $BTCPAY_DOCKER_COMPOSE up --build --remove-orphans -d;g' helpers.sh
+  - export BTCPAY_HOST="master.staging-server02.btcpay.host"
+  - export NBITCOIN_NETWORK="mainnet"
+  - export BTCPAYGEN_CRYPTO1="btc"
+  - export BTCPAYGEN_ADDITIONAL_FRAGMENTS="opt-save-storage-xxs"
+  - export BTCPAYGEN_REVERSEPROXY="nginx"
+  - export BTCPAYGEN_LIGHTNING="lnd"
+  - export BTCPAY_ENABLE_SSH=true
+  - echo "#!/bin/bash" > test.sh
+  - echo "source /root/BTCPayServer/btcpayserver-docker/btcpay-setup.sh -i" >> tmp_test.sh
+  - chmod 755 tmp_test.sh
+  - [ bash, /root/BTCPayServer/btcpayserver-docker/tmp_test.sh ]
+  - >-
+    sed -i 's;image: \${BTCPAY_IMAGE:-btcpayserver\/btcpayserver:.*\..*\..*};build:\n      context: \.\./btcpayserver\n      dockerfile: amd64\.Dockerfile;g' Generated/docker-compose.generated.yml
+  - [/root/BTCPayServer/btcpayserver-docker/btcpay-restart.sh]
+  - cd /root/BTCPayServer/btcpayserver-docker/
+  - [/root/BTCPayServer/btcpayserver-docker/btcpay-down.sh]
+  - cd contrib/FastSync
+  - [./load-utxo-set.sh]
+  - [/root/BTCPayServer/btcpayserver-docker/btcpay-up.sh]
