@@ -108,7 +108,7 @@ Vagrant.configure("2") do |config|
     export BTCPAYGEN_REVERSEPROXY="nginx"
     export BTCPAYGEN_EXCLUDE_FRAGMENTS="nginx-https" # offload SSL termination to apache
     export REVERSEPROXY_HTTP_PORT=9001
-    export BTCPAYGEN_LIGHTNING="lnd"
+    export BTCPAYGEN_LIGHTNING="clightning"
     export BTCPAY_ENABLE_SSH=true
     . ./btcpay-setup.sh -i
     # patch generated docker-compose file to include build context instead of image

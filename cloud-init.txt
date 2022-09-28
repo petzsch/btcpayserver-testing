@@ -16,7 +16,7 @@ runcmd:
   - export BTCPAYGEN_CRYPTO1="btc"
   - export BTCPAYGEN_ADDITIONAL_FRAGMENTS="opt-save-storage-xxs"
   - export BTCPAYGEN_REVERSEPROXY="nginx"
-  - export BTCPAYGEN_LIGHTNING="lnd"
+  - export BTCPAYGEN_LIGHTNING="clightning"
   - export BTCPAY_ENABLE_SSH=true
   - echo "#!/bin/bash" > tmp_test.sh
   - echo "source /root/BTCPayServer/btcpayserver-docker/btcpay-setup.sh -i" >> tmp_test.sh
