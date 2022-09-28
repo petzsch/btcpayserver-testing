@@ -5,6 +5,8 @@
 runcmd:
   - echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
   - systemctl restart ssh
+  - apt-get update
+  - apt-get install -y git
   - mkdir /root/BTCPayServer
   - cd /root/BTCPayServer
   - git clone https://github.com/btcpayserver/btcpayserver-docker
